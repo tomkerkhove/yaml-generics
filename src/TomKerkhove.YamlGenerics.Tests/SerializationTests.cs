@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using TomKerkhove.YamlGenerics.Tests.Model;
 using TomKerkhove.YamlGenerics.Tests.Model.Enum;
-using TomKerkhove.YamlGenerics.Tests.Model.Interfaces;
 using Xunit;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
