@@ -3,13 +3,15 @@ using System.IO;
 using System.Linq;
 using TomKerkhove.YamlGenerics.Tests.Model;
 using TomKerkhove.YamlGenerics.Tests.Model.Enum;
+using TomKerkhove.YamlGenerics.Tests.Serialization;
 using Xunit;
+using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace TomKerkhove.YamlGenerics.Tests
 {
-    public class SerializationTests
+    public class YamlStreamSerializationTests
     {
         [Fact]
         public void Test1()
@@ -20,6 +22,11 @@ namespace TomKerkhove.YamlGenerics.Tests
                 LicensePlate = Guid.NewGuid().ToString(),
                 IsDiesel = true
             };
+            var merchant = new Person
+            {
+                FirstName = "Bill",
+                LastName = "Bracket"
+            };
             var volvo = new Volvo
             {
                 LicensePlate = Guid.NewGuid().ToString(),
@@ -28,7 +35,7 @@ namespace TomKerkhove.YamlGenerics.Tests
             var ford = new Ford
             {
                 LicensePlate = Guid.NewGuid().ToString(),
-                HasSpareTier = true
+                HasSpareTire = true
             };
             var factory = new Factory
             {
@@ -37,35 +44,36 @@ namespace TomKerkhove.YamlGenerics.Tests
                     ford,
                     audi,
                     volvo
-                }
+                },
+                Merchant = merchant
             };
 
             // Act
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(new CamelCaseNamingConvention())
+                .EmitDefaults()
                 .Build();
-            var rawFactory = serializer.Serialize(factory);
+            var rawFactoryYaml = serializer.Serialize(factory);
 
-            var input = new StringReader(rawFactory);
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(new CamelCaseNamingConvention())
-                .Build();
+            var input = new StringReader(rawFactoryYaml);
+            var yamlStream = new YamlStream();
+            yamlStream.Load(input);
 
-            var deserializedFactory = deserializer.Deserialize<Factory>(input);
+            var deserializedFactory = FactorySerializer.Deserialize(yamlStream);
 
             // Assert
             Assert.NotNull(deserializedFactory);
             Assert.NotNull(deserializedFactory.Cars);
             Assert.Equal(deserializedFactory.Cars.Count, factory.Cars.Count);
-            var deserializedAudi = (Audi)deserializedFactory.Cars.SingleOrDefault(car => car.Make == Make.Audi);
+            var deserializedAudi = (Audi) deserializedFactory.Cars.SingleOrDefault(car => car.Make == Make.Audi);
             Assert.NotNull(deserializedAudi);
             Assert.Equal(deserializedAudi.LicensePlate, audi.LicensePlate);
             Assert.Equal(deserializedAudi.IsDiesel, audi.IsDiesel);
-            var deserializedFord = (Ford)deserializedFactory.Cars.SingleOrDefault(car => car.Make == Make.Ford);
+            var deserializedFord = (Ford) deserializedFactory.Cars.SingleOrDefault(car => car.Make == Make.Ford);
             Assert.NotNull(deserializedFord);
             Assert.Equal(deserializedFord.LicensePlate, ford.LicensePlate);
-            Assert.Equal(deserializedFord.HasSpareTier, ford.HasSpareTier);
-            var deserializedVolvo = (Volvo)deserializedFactory.Cars.SingleOrDefault(car => car.Make == Make.Volvo);
+            Assert.Equal(deserializedFord.HasSpareTire, ford.HasSpareTire);
+            var deserializedVolvo = (Volvo) deserializedFactory.Cars.SingleOrDefault(car => car.Make == Make.Volvo);
             Assert.NotNull(deserializedVolvo);
             Assert.Equal(deserializedVolvo.LicensePlate, volvo.LicensePlate);
             Assert.Equal(deserializedVolvo.HasAutomaticBreak, volvo.HasAutomaticBreak);

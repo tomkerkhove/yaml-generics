@@ -6,6 +6,6 @@ namespace TomKerkhove.YamlGenerics.Tests.Model
     public class Ford : Car, ICar
     {
         public Make Make { get; set; } = Make.Ford;
-        public bool HasSpareTier { get; set; }
+        public bool HasSpareTire { get; set; }
     }
 }
